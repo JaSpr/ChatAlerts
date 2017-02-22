@@ -1,0 +1,16 @@
+{
+  "open_chest": {
+    "category": "block",
+    "subtitle": "mymod.subtitle.openChest",
+    "sounds": [ "mymod:open_chest_sound_file" ]
+  },
+  "epic_music": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "mymod:music/epic_music",
+        "stream": true
+      }
+    ]
+  }
+}
