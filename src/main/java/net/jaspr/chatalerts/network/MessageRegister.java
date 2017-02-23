@@ -12,21 +12,15 @@
  * Quark is Open Source and distributed under the
  * CC-BY-NC-SA 3.0 License: https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_GB
  */
-package net.jaspr.base.network;
+package net.jaspr.chatalerts.network;
 
-import net.jaspr.chatalerts.ref.Ref;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
+import net.jaspr.chatalerts.network.message.MessageChangeConfig;
 
-public class NetworkHandler {
+public class MessageRegister {
 
-	public static final SimpleNetworkWrapper INSTANCE = NetworkRegistry.INSTANCE.newSimpleChannel(Ref.MOD_ID);
-
-	private static int i = 0;
-
-	public static void register(Class clazz, Side handlerSide) {
-		INSTANCE.registerMessage(clazz, clazz, i++, handlerSide);
+	public static void init() {
+		NetworkHandler.register(MessageChangeConfig.class, Side.CLIENT);
 	}
-
+	
 }

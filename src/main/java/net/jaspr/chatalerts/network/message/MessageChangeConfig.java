@@ -12,9 +12,9 @@
  * Quark is Open Source and distributed under the
  * CC-BY-NC-SA 3.0 License: https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_GB
  */
-package net.jaspr.base.network.message;
+package net.jaspr.chatalerts.network.message;
 
-import net.jaspr.base.module.ModuleLoader;
+import net.jaspr.chatalerts.module.ModuleLoader;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;

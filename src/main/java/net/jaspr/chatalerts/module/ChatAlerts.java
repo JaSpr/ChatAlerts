@@ -18,77 +18,133 @@ package net.jaspr.chatalerts.module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.fml.common.FMLLog;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.jaspr.base.module.Feature;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ChatAlerts extends Feature {
 
-    private static String DEFAULT_HEADER = "^<[a-zA-Z0-9_]*> ";
-    private static String CUSTOM_HEADER = "^\\[\\w] [a-zA-Z0-9_]*: ";
+    private static String USER_NAME_PATTERN = "([a-zA-Z0-9_]*)";
+    private static String DEFAULT_HEADER = "^<" + USER_NAME_PATTERN + "> ";
+    private static String CUSTOM_HEADER = "^\\[\\w] " + USER_NAME_PATTERN + ": ";
+    private static String PRIVATE_MESSAGE_HEADER = "\\[" + USER_NAME_PATTERN + " \\-> " + USER_NAME_PATTERN + "\\]: ";
     private boolean alertOnServerMessage;
     private boolean alertOnUserMention;
-    private boolean alertOnPrivateMessage; // TODO
-    private java.lang.String additionalMatchStrings;
-    private java.lang.String starredUsers;
+    private boolean alertOnPrivateMessage;
+    private boolean useNoisyAlert;
+    private java.lang.String[] additionalMatchTerms;
+    private java.lang.String[] starredUsers;
 
     @Override
     public void setupConfig() {
-        alertOnServerMessage = loadPropBool("Alert on all server messages", "Will play an alert sound whenever a server message comes through", true);
-        alertOnUserMention = loadPropBool("Alert on username mentions", "Will play an alert sound when your full username is mentioned in chat", true);
-        alertOnPrivateMessage = loadPropBool("Alert on private messages", "Will play an alert sound when you receive a private message", true);
-        additionalMatchStrings = loadPropString("Additional alert terms", "Comma-separated list of terms which will trigger an alert. Spaces will be ignored.", "");
-        starredUsers = loadPropString("Alert on messages from user names", "Comma-separated list of usernames to receive an alert when they chat. Spaces will be ignored.", "");
+        useNoisyAlert = loadPropBool("useNoisyAlert", "Plays a more piercing alert sound (the anvil) to REALLY get your attention.", false);
+        alertOnServerMessage = loadPropBool("serverMsgAlerts", "Play alert whenever a server message comes through", true);
+        alertOnUserMention = loadPropBool("mentionAlerts", "Play alert when current player is mentioned in chat", true);
+        alertOnPrivateMessage = loadPropBool("pmAlerts", "Play alert when current player receive a private message", true);
+        additionalMatchTerms = loadPropStringList("customAlertTerms", "List of words or phrases to listen for. (Plays alert when they are mentioned in chat).  + to add a new word or phrase, X to remove.", new String[]{});
+        starredUsers = loadPropStringList("customPlayerAlerts", "List of users (full Minecraft usernames) to listen for (Plays alert when they post in chat). + to add a new user, X to remove.", new String[]{});
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void onChatMessage(ClientChatReceivedEvent event) {
         EntityPlayer player = Minecraft.getMinecraft().player;
+
         String message = event.getMessage().getUnformattedText();
         String username = player.getDisplayNameString();
+        String strippedMessage = getStrippedMessage(message);
+        String senderName = getSenderName(message);
 
+        // Outgoing chat message
         if (isProbablyFromCurrentPlayer(message)) {
-            player.playSound(SoundEvents.BLOCK_ENDERCHEST_OPEN, 0.5f, 1f);
+            // we don't want alerts for our own messages.
+            return;
         }
 
-        String trimmedMessage = getStrippedMessage(message);
-
-        if (alertOnUserMention && trimmedMessage.toLowerCase().contains(username.toLowerCase())) {
-            playAlert();
-        } else if (alertOnServerMessage && isProbablyFromServer(message)) {
-            playAlert();
-        } else if (!additionalMatchStrings.isEmpty()) {
-            for (String term : additionalMatchStrings.split(",")) {
-                if (trimmedMessage.toLowerCase().contains(term.trim().toLowerCase())) {
-                    playAlert();
-                    return;
-                }
-            }
-        } else if (!starredUsers.isEmpty()) { // TODO REBUILD YOU GOT THIS WRONG
-            for (String starredSender : starredUsers.split(",")) {
-                if (getSenderName(message).toLowerCase().equals(starredSender.trim().toLowerCase())) {
-                    playAlert();
-                    return;
-                }
+        // Incoming private message
+        if (alertOnPrivateMessage && isProbablyPrivateMessage(message)) {
+            FMLLog.info("[ChatAlerts] New private message from `" + getSenderName(message) + "` to `" + getPrivateMessageRecipient(message) + "`.");
+            String recipient = getPrivateMessageRecipient(message).toLowerCase();
+            if (recipient.equals("me") || recipient.equals(username.toLowerCase())) {
+                playAlert(message);
+                return;
             }
         }
 
+        // No messages for current player status changes
+        if (isCurrentPlayerAFKMessage(message, player) || isCurrentPlayerJoinMessage(message, player) || isCurrentPlayerAchievementMessage(message, player)) {
+            return;
+        }
+
+        // Username was mentioned in an incoming message
+        if (alertOnUserMention && strippedMessage.toLowerCase().contains(username.toLowerCase())) {
+            playAlert(message);
+            return;
+        }
+
+        // Incoming server message.
+        if (alertOnServerMessage && isProbablyFromServer(message)) {
+            playAlert(message);
+            return;
+        }
+
+        // Matches user-defined chat terms or senders.
+        if (additionalMatchTerms.length > 0 || starredUsers.length > 0) {
+            for (String term : additionalMatchTerms) {
+                if (!term.trim().isEmpty() && strippedMessage.toLowerCase().contains(term.trim().toLowerCase())) {
+                    playAlert(message);
+                    return;
+                }
+            }
+            for (String starredSender : starredUsers) {
+                if (!senderName.isEmpty() && senderName.toLowerCase().equals(starredSender.trim().toLowerCase())) {
+                    playAlert(message);
+                    return;
+                }
+            }
+        }
     }
+
     @SideOnly(Side.CLIENT)
-    private void playAlert() {
-        Minecraft.getMinecraft().player.playSound(SoundEvents.BLOCK_ANVIL_PLACE, 0.5f, 1f);
+    private void playAlert(String message) {
+        FMLLog.info("[ChatAlerts] Playing alert for message: " + message);
+
+        SoundEvent notification = SoundEvents.BLOCK_GLASS_BREAK;
+        float volume = 0.5f;
+
+        if (useNoisyAlert) {
+            notification = SoundEvents.BLOCK_ANVIL_PLACE;
+            volume = 0.7f;
+        }
+
+        Minecraft.getMinecraft().player.playSound(notification, volume, 1f);
     }
 
     @SideOnly(Side.CLIENT)
     private Boolean isProbablyFromCurrentPlayer(String message) {
         EntityPlayer player = Minecraft.getMinecraft().player;
-        String username = player.getDisplayNameString().toLowerCase();
-        message = message.toLowerCase();
+        String username = player.getDisplayNameString();
+        String senderName = getSenderName(message);
 
-        return (message.matches("^<" + username + "> .*$") || message.matches("^\\[\\w] " + username + ":(.*)"));
+        return (senderName.equals(username)) || (isProbablyPrivateMessage(message) && senderName.toLowerCase().equals("me"));
+    }
+
+    @SideOnly(Side.CLIENT)
+    private boolean isCurrentPlayerAFKMessage(String message, EntityPlayer player) {
+        return message.startsWith("*" + player.getDisplayNameString()) && message.contains("AFK");
+    }
+
+    @SideOnly(Side.CLIENT)
+    private boolean isCurrentPlayerJoinMessage(String message, EntityPlayer player) {
+        return message.equals(player.getDisplayNameString() + " joined the game");
+    }
+
+    @SideOnly(Side.CLIENT)
+    private boolean isCurrentPlayerAchievementMessage(String message, EntityPlayer player) {
+        return message.startsWith(player.getDisplayNameString() + " has just earned the achievement");
     }
 
     @SideOnly(Side.CLIENT)
@@ -97,13 +153,28 @@ public class ChatAlerts extends Feature {
     }
 
     @SideOnly(Side.CLIENT)
+    private Boolean isProbablyPrivateMessage(String message) {
+        return message.matches(PRIVATE_MESSAGE_HEADER + ".*$");
+    }
+
+    @SideOnly(Side.CLIENT)
+    private String getPrivateMessageRecipient(String message) {
+        if (message.matches(PRIVATE_MESSAGE_HEADER + ".*$")) {
+            return message.replaceAll(PRIVATE_MESSAGE_HEADER + ".*$", "$2").trim();
+        }
+        return "";
+    }
+
+    @SideOnly(Side.CLIENT)
     private String getStrippedMessage(String message) {
         if (message.matches(DEFAULT_HEADER + ".*$")) {
-            return message.replaceAll(DEFAULT_HEADER, "");
+            return message.replaceAll(DEFAULT_HEADER, "").trim();
         }
-
-        if (message.matches(CUSTOM_HEADER + ".*")) {
-            return message.replaceAll(CUSTOM_HEADER, "");
+        if (message.matches(CUSTOM_HEADER + ".*$")) {
+            return message.replaceAll(CUSTOM_HEADER, "").trim();
+        }
+        if (message.matches(PRIVATE_MESSAGE_HEADER + ".*$")) {
+            return message.replaceAll(PRIVATE_MESSAGE_HEADER, "").trim();
         }
 
         return message;
@@ -111,11 +182,14 @@ public class ChatAlerts extends Feature {
 
     @SideOnly(Side.CLIENT)
     private String getSenderName(String message) {
-        if (message.matches(DEFAULT_HEADER)) {
-            return message.replaceAll("^<([a-zA-Z0-9_]*)>.*$", "$1");
+        if (message.matches(DEFAULT_HEADER + ".*$")) {
+            return message.replaceAll(DEFAULT_HEADER + ".*$", "$1").trim();
         }
-        if (message.matches(CUSTOM_HEADER)) {
-            return message.replaceAll("^\\[\\w] ([a-zA-Z0-9_]*):.*$", "$1");
+        if (message.matches(PRIVATE_MESSAGE_HEADER + ".*$")) {
+            return message.replaceAll(PRIVATE_MESSAGE_HEADER + ".*$", "$1").trim();
+        }
+        if (message.matches(CUSTOM_HEADER + ".*$")) {
+            return message.replaceAll(CUSTOM_HEADER + ".*$", "$1").trim();
         }
         return "";
     }

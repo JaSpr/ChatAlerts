@@ -25,8 +25,8 @@ public final class Ref {
 	public static final String PREFIX_MOD = MOD_ID + ":";
 
 	// Proxy Constants
-	public static final String PROXY_COMMON = "net.jaspr.base.proxy.CommonProxy";
-	public static final String PROXY_CLIENT = "net.jaspr.base.proxy.ClientProxy";
-	public static final String GUI_FACTORY  = "net.jaspr.base.handler.GuiFactory";
+	public static final String PROXY_COMMON = "net.jaspr.chatalerts.proxy.CommonProxy";
+	public static final String PROXY_CLIENT = "net.jaspr.chatalerts.proxy.ClientProxy";
+	public static final String GUI_FACTORY  = "net.jaspr.chatalerts.handler.GuiFactory";
 
 }

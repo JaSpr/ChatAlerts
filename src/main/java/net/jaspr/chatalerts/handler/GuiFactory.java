@@ -12,7 +12,7 @@
  * Quark is Open Source and distributed under the
  * CC-BY-NC-SA 3.0 License: https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_GB
  */
-package net.jaspr.base.handler;
+package net.jaspr.chatalerts.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -23,7 +23,7 @@ import net.minecraftforge.fml.client.IModGuiFactory;
 import net.minecraftforge.fml.client.config.GuiConfig;
 import net.minecraftforge.fml.client.config.IConfigElement;
 import net.jaspr.chatalerts.ref.Ref;
-import net.jaspr.base.module.ModuleLoader;
+import net.jaspr.chatalerts.module.ModuleLoader;
 
 import java.util.ArrayList;
 import java.util.List;

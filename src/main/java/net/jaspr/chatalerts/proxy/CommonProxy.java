@@ -13,31 +13,40 @@
  * Quark is Open Source and distributed under the
  * CC-BY-NC-SA 3.0 License: https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en_GB
  */
-package net.jaspr.base.proxy;
+package net.jaspr.chatalerts.proxy;
 
+import net.jaspr.chatalerts.network.GuiHandler;
+import net.jaspr.chatalerts.network.MessageRegister;
+import net.jaspr.chatalerts.ChatAlerts;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.jaspr.base.module.ModuleLoader;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
 
-public class ClientProxy extends CommonProxy {
-	
-	@Override
+
+import net.jaspr.chatalerts.module.ModuleLoader;
+
+public class CommonProxy {
+
 	public void preInit(FMLPreInitializationEvent event) {
-		super.preInit(event);
-		ModuleLoader.preInitClient(event);
+		ModuleLoader.preInit(event);
+
+		NetworkRegistry.INSTANCE.registerGuiHandler(ChatAlerts.instance, new GuiHandler());
+		MessageRegister.init();
 	}
 
-	@Override
 	public void init(FMLInitializationEvent event) {
-		super.init(event);
-		ModuleLoader.initClient(event);
+		ModuleLoader.init(event);
 	}
 
-	@Override
 	public void postInit(FMLPostInitializationEvent event) {
-		super.postInit(event);
-		ModuleLoader.postInitClient(event);
+		ModuleLoader.postInit(event);
 	}
-		
+
+	public void serverStarting(FMLServerStartingEvent event) {
+		ModuleLoader.serverStarting(event);
+	}
+
+	
 }

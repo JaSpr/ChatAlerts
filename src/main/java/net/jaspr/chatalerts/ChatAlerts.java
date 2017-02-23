@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 import net.jaspr.chatalerts.ref.Ref;
-import net.jaspr.base.proxy.CommonProxy;
+import net.jaspr.chatalerts.proxy.CommonProxy;
 
 @Mod(modid = Ref.MOD_ID, name = Ref.MOD_NAME, version = Ref.VERSION, guiFactory = Ref.GUI_FACTORY)
 public class ChatAlerts {

@@ -1,7 +1,7 @@
 [
   {
-    "modid": "chatalert",
-    "name": "ChatAlert",
+    "modid": "chatalerts",
+    "name": "ChatAlerts",
     "description": "Minecraft client mod to play alert sounds for chat messages matching specific rules. http://github.com/JaSpr/ChatAlert",
     "version": "${version}",
     "mcversion": "${mcversion}",

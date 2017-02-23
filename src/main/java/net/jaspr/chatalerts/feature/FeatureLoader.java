@@ -16,7 +16,7 @@
 package net.jaspr.chatalerts.feature;
 
 import net.jaspr.chatalerts.module.ChatAlerts;
-import net.jaspr.base.module.Module;
+import net.jaspr.chatalerts.module.Module;
 
 public class FeatureLoader extends Module {
 
