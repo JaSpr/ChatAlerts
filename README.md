@@ -10,4 +10,4 @@ Get alerts when:
 * Any custom users (that you specify) send chat messages.
 * You receive a private message.
  
-If you aren't receiving auditory alerts when you think you should, please submit an issue at 
+If you aren't receiving auditory alerts when you think you should, please submit an issue. 
