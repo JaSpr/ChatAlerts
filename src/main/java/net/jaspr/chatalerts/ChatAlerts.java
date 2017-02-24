@@ -17,36 +17,41 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import net.jaspr.chatalerts.ref.Ref;
 import net.jaspr.chatalerts.proxy.CommonProxy;
 
 @Mod(modid = Ref.MOD_ID, name = Ref.MOD_NAME, version = Ref.VERSION, guiFactory = Ref.GUI_FACTORY)
 public class ChatAlerts {
 
-	@Instance(Ref.MOD_ID)
-	public static ChatAlerts instance;
+    public static Logger logger = LogManager.getLogger(Ref.MOD_NAME);
 
-	@SidedProxy(serverSide = Ref.PROXY_COMMON, clientSide = Ref.PROXY_CLIENT)
-	public static CommonProxy proxy;
+    @Instance(Ref.MOD_ID)
+    public static ChatAlerts instance;
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		proxy.preInit(event);
-	}
+    @SidedProxy(serverSide = Ref.PROXY_COMMON, clientSide = Ref.PROXY_CLIENT)
+    public static CommonProxy proxy;
 
-	@EventHandler
-	public void init(FMLInitializationEvent event) {
-		proxy.init(event);
-	}
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        proxy.preInit(event);
+    }
 
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent event) {
-		proxy.postInit(event);
-	}
+    @EventHandler
+    public void init(FMLInitializationEvent event) {
+        proxy.init(event);
+    }
 
-	@EventHandler
-	public void serverStarting(FMLServerStartingEvent event) {
-		proxy.serverStarting(event);
-	}
+    @EventHandler
+    public void postInit(FMLPostInitializationEvent event) {
+        proxy.postInit(event);
+    }
+
+    @EventHandler
+    public void serverStarting(FMLServerStartingEvent event) {
+        proxy.serverStarting(event);
+    }
 
 }

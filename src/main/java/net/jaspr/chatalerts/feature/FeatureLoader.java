@@ -15,14 +15,14 @@
  */
 package net.jaspr.chatalerts.feature;
 
-import net.jaspr.chatalerts.module.ChatAlerts;
+import net.jaspr.chatalerts.module.AlertHandler;
 import net.jaspr.chatalerts.module.Module;
 
 public class FeatureLoader extends Module {
 
 	@Override
 	public void addFeatures() {
-		registerFeature(new ChatAlerts(), "chatalerts");
+		registerFeature(new AlertHandler(), "chatalerts");
 	}
 
 }
